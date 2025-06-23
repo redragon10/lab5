@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Пошук тексту пісні через Lyrics.ovh API</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 40px;
+      }
+      .lyrics {
+        white-space: pre-line;
+        background: #f9f9f9;
+        padding: 1em;
+        border-radius: 8px;
+      }
+      .error {
+        color: red;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Пошук тексту пісні через Lyrics.ovh API</h2>
+    <form id="lyricsForm">
+      <label>Виконавець: <input type="text" name="artist" required /></label
+      ><br />
+      <label>Назва пісні: <input type="text" name="title" required /></label
+      ><br />
+      <button type="submit">Знайти текст</button>
+    </form>
+    <div id="result" class="lyrics"></div>
+
+    <script>
+      document
+        .getElementById("lyricsForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+          const artist = this.artist.value;
+          const title = this.title.value;
+          const resultDiv = document.getElementById("result");
+          resultDiv.innerText = "Завантаження...";
+          try {
+            const response = await fetch("/api/lyrics", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ artist, title }),
+            });
+            const data = await response.json();
+            resultDiv.innerText = data.lyrics;
+            if (
+              data.lyrics.startsWith("Текст пісні не знайдено") ||
+              data.lyrics.startsWith("Сталася помилка") ||
+              data.lyrics.startsWith("Введіть виконавця")
+            ) {
+              resultDiv.classList.add("error");
+            } else {
+              resultDiv.classList.remove("error");
+            }
+          } catch (error) {
+            resultDiv.innerText = "Сталася помилка при завантаженні тексту.";
+            resultDiv.classList.add("error");
+          }
+        });
+    </script>
+  </body>
+</html>
